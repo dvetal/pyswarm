@@ -8,7 +8,10 @@ for python that supports constraints.
 What's New
 ==========
 
-This is the initial release, but it should work out of the box. The syntax is
+- This version allows for the return of a model object in the second return position.  Particularly, useful if you
+are using a package like sklearn and want to return the optimal model object.
+
+- This is the initial release, but it should work out of the box. The syntax is
 similar to the other SciPy optimization routines (the ones like ``fmin_slsqp``).
 Currently, only a single objective is supported, but with any number of
 constraints (or none).

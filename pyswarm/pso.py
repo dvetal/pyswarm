@@ -1,4 +1,5 @@
 import numpy as np
+import cPickle
     
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={}, 
         swarmsize=10, omega=0.5, phip=0.5, phig=0.5, maxiter=1000, 
@@ -56,6 +57,9 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         The swarm's best known position (optimal design)
     f : scalar
         The objective value at ``g``
+    model : special package object
+            An optimal model object returned as the (optimal design).  Typically, objects found in machine learning
+            packages like sklearn.
    
     """
    
@@ -106,7 +110,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         p[i, :] = x[i, :]
        
         # Calculate the objective's value at the current particle's
-        fp[i] = obj(p[i, :])
+        fp[i], model = obj(p[i, :])
        
         # If the current particle's position is better than the swarm's,
         # update the best swarm position
@@ -135,29 +139,30 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
             mark2 = x[i, :]>ub
             x[i, mark1] = lb[mark1]
             x[i, mark2] = ub[mark2]
-            fx = obj(x[i, :])
+            fx, _model  = obj(x[i, :])
+
             
             # Compare particle's best position (if constraints are satisfied)
             if fx<fp[i] and is_feasible(x[i, :]):
                 p[i, :] = x[i, :].copy()
                 fp[i] = fx
 
+
                 # Compare swarm's best position to current particle's position
                 # (Can only get here if constraints are satisfied)
                 if fx<fg:
                     if debug:
                         print 'New best for swarm at iteration %d:'%it, x[i, :], fx
-
                     tmp = x[i, :].copy()
                     stepsize = np.sqrt(np.sum((g-tmp)**2))
                     if np.abs(fg - fx)<=minfunc:
                         if debug:
                             print 'Stopping search: Swarm best objective change less than:', minfunc
-                        return tmp, fx
+                        return tmp, fx, model
                     elif stepsize<=minstep:
                         if debug:
                             print 'Stopping search: Swarm best position change less than:', minstep
-                        return tmp, fx
+                        return tmp, fx, model
                     else:
                         g = tmp.copy()
                         fg = fx
@@ -171,5 +176,5 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     
     if g is []:
         print 'Warning: No feasible point found'
-    return g, fg
+    return g, fg, model
 
